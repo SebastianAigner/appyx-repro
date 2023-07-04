@@ -1,6 +1,8 @@
 package com.bumble.appyx.navigation.node.backstack
 
 import android.os.Parcelable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,7 +53,7 @@ class BackStackNode(
         GestureFactory.Noop()
     },
     gestureSettleConfig: GestureSettleConfig = GestureSettleConfig(),
-    private val isMaxSize: Boolean = false,
+    private val childSize: ChildSize = ChildSize.DEFAULT,
     private val backStack: BackStack<InteractionTarget> = BackStack(
         model = BackStackModel(
             initialTargets = listOf(InteractionTarget.Child(1)),
@@ -59,12 +61,18 @@ class BackStackNode(
         ),
         motionController = motionController,
         gestureFactory = gestureFactory,
+        animationSpec = spring(stiffness = Spring.StiffnessVeryLow),
         gestureSettleConfig = gestureSettleConfig,
     )
 ) : ParentNode<BackStackNode.InteractionTarget>(
     buildContext = buildContext,
     appyxComponent = backStack,
 ) {
+    enum class ChildSize {
+        DEFAULT,
+        MAX,
+        MAX_WIDTH,
+    }
     sealed class InteractionTarget : Parcelable {
         @Parcelize
         class Child(val index: Int) : InteractionTarget()
@@ -79,7 +87,7 @@ class BackStackNode(
                     modifier = Modifier
                         .fillMaxSize()
                         .then(
-                            if (isMaxSize) {
+                            if (childSize == ChildSize.MAX) {
                                 Modifier
                             } else {
                                 Modifier.clip(RoundedCornerShape(5))
@@ -114,10 +122,10 @@ class BackStackNode(
                     .fillMaxSize()
                     .background(appyx_dark)
                     .then(
-                        if (isMaxSize) {
-                            Modifier.padding(bottom = 16.dp)
-                        } else {
-                            Modifier.padding(16.dp)
+                        when (childSize) {
+                            ChildSize.DEFAULT -> Modifier.padding(16.dp)
+                            ChildSize.MAX -> Modifier.padding(bottom = 16.dp)
+                            ChildSize.MAX_WIDTH -> Modifier.padding(top = 16.dp, bottom = 16.dp)
                         }
                     ),
             )

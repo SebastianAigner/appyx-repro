@@ -85,7 +85,7 @@ class BackStackExamplesNode(
                 buildContext = buildContext,
                 motionController = { BackstackParallax(uiContext = it) },
                 gestureFactory = { BackstackParallax.Gestures(it) },
-                isMaxSize = true
+                childSize = BackStackNode.ChildSize.MAX,
             ).also {
                 padding.value = 0
             }
@@ -94,7 +94,10 @@ class BackStackExamplesNode(
                 motionController = { BackStack3D(it) },
                 gestureFactory = { BackStack3D.Gestures(it) },
                 gestureSettleConfig = GestureSettleConfig(completionThreshold = 0.2f),
-            )
+                childSize = BackStackNode.ChildSize.MAX_WIDTH,
+            ).also {
+                padding.value = 0
+            }
         }
 
     @Composable
