@@ -31,10 +31,18 @@ class BackStack3D<InteractionTarget : Any>(
 
     private val topMost: TargetUiState =
         TargetUiState(
-            position = Position.Target(DpOffset(0f.dp, (itemsInStack * 16).dp)),
+            position = Position.Target(DpOffset(0f.dp, 16.dp)),
             scale = Scale.Target(1f, origin = TransformOrigin(0.5f, 0.0f)),
             alpha = Alpha.Target(1f),
             zIndex = ZIndex.Target(itemsInStack.toFloat()),
+        )
+
+    private val single: TargetUiState =
+        TargetUiState(
+            position = Position.Target(DpOffset(0.dp, 0.dp)),
+            scale = Scale.Target(1f),
+            alpha = Alpha.Target(1f),
+            zIndex = ZIndex.Target(1f),
         )
 
     private val incoming: TargetUiState =
@@ -45,18 +53,26 @@ class BackStack3D<InteractionTarget : Any>(
             zIndex = ZIndex.Target(itemsInStack + 1f),
         )
 
-    private fun stacked(stackIndex: Int): TargetUiState =
+    private val bottom: TargetUiState =
         TargetUiState(
-            position = Position.Target(DpOffset(0f.dp, (itemsInStack - stackIndex) * 16.dp)),
-            scale = Scale.Target(1f - stackIndex * 0.05f, origin = TransformOrigin(0.5f, 0.0f)),
-            alpha = Alpha.Target(if (stackIndex < itemsInStack) 1f else 0f),
+            position = Position.Target(DpOffset(0f.dp, 0.dp)),
+            scale = Scale.Target(0.95f, origin = TransformOrigin(0.5f, 0.0f)),
+            alpha = Alpha.Target(1f),
+            zIndex = ZIndex.Target(1f),
+        )
+
+    private fun stacked(itemsInStack: Int, stackIndex: Int): TargetUiState =
+        TargetUiState(
+            position = Position.Target(DpOffset(0.dp, if (itemsInStack == 1) (-16).dp else 0.dp)),
+            scale = Scale.Target(if (itemsInStack == 1) 0.95f else 0.90f, origin = TransformOrigin(0.5f, 0.0f)),
+            alpha = Alpha.Target(if (stackIndex == 1) 1f else 0f),
             zIndex = ZIndex.Target(-stackIndex.toFloat()),
         )
 
     override fun State<InteractionTarget>.toUiTargets(): List<MatchedTargetUiState<InteractionTarget, TargetUiState>> =
         created.mapIndexed { _, element -> MatchedTargetUiState(element, incoming) } +
-                listOf(active).map { MatchedTargetUiState(it, topMost) } +
-                stashed.mapIndexed { index, element -> MatchedTargetUiState(element, stacked(stashed.size - index)) } +
+                listOf(active).map { MatchedTargetUiState(it, if (stashed.isEmpty()) single else topMost) } +
+                stashed.mapIndexed { index, element -> MatchedTargetUiState(element, stacked(stashed.size, stashed.size - index)) } +
                 destroyed.mapIndexed { _, element -> MatchedTargetUiState(element, incoming) }
 
     override fun mutableUiStateFor(uiContext: UiContext, targetUiState: TargetUiState): MutableUiState =

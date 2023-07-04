@@ -125,7 +125,7 @@ class BackStackNode(
                         when (childSize) {
                             ChildSize.DEFAULT -> Modifier.padding(16.dp)
                             ChildSize.MAX -> Modifier.padding(bottom = 16.dp)
-                            ChildSize.MAX_WIDTH -> Modifier.padding(top = 16.dp, bottom = 16.dp)
+                            ChildSize.MAX_WIDTH -> Modifier.padding(top = 8.dp, bottom = 16.dp)
                         }
                     ),
             )
