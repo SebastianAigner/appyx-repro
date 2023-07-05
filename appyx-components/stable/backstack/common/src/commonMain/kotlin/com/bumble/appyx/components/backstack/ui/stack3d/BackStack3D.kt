@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import com.bumble.appyx.components.backstack.BackStackModel.State
 import com.bumble.appyx.components.backstack.operation.Pop
 import com.bumble.appyx.interactions.core.ui.context.TransitionBounds
@@ -32,7 +31,10 @@ class BackStack3D<InteractionTarget : Any>(
     private val topMost: TargetUiState =
         TargetUiState(
             position = Position.Target(DpOffset(0f.dp, 16.dp)),
-            scale = Scale.Target(1f, origin = TransformOrigin(0.5f, 0.0f)),
+            scale = Scale.Target(
+                value = 1f,
+                origin = TransformOrigin(0.5f, 0.0f)
+            ),
             alpha = Alpha.Target(1f),
             zIndex = ZIndex.Target(itemsInStack.toFloat()),
         )
@@ -48,23 +50,21 @@ class BackStack3D<InteractionTarget : Any>(
     private val incoming: TargetUiState =
         TargetUiState(
             position = Position.Target(DpOffset(0f.dp, height)),
-            scale = Scale.Target(1f, origin = TransformOrigin(0.5f, 0.0f)),
-            alpha = Alpha.Target(0f),
+            scale = Scale.Target(
+                value = 1f,
+                origin = TransformOrigin(0.5f, 0.0f)
+            ),
+            alpha = Alpha.Target(1f),
             zIndex = ZIndex.Target(itemsInStack + 1f),
         )
 
-    private val bottom: TargetUiState =
+    private fun stacked(isSingleItemStack: Boolean, stackIndex: Int): TargetUiState =
         TargetUiState(
-            position = Position.Target(DpOffset(0f.dp, 0.dp)),
-            scale = Scale.Target(0.95f, origin = TransformOrigin(0.5f, 0.0f)),
-            alpha = Alpha.Target(1f),
-            zIndex = ZIndex.Target(1f),
-        )
-
-    private fun stacked(itemsInStack: Int, stackIndex: Int): TargetUiState =
-        TargetUiState(
-            position = Position.Target(DpOffset(0.dp, if (itemsInStack == 1) (-16).dp else 0.dp)),
-            scale = Scale.Target(if (itemsInStack == 1) 0.95f else 0.90f, origin = TransformOrigin(0.5f, 0.0f)),
+            position = Position.Target(DpOffset(0.dp, if (isSingleItemStack) (-16).dp else 0.dp)),
+            scale = Scale.Target(
+                value = if (isSingleItemStack) 0.95f else 0.90f,
+                origin = TransformOrigin(0.5f, 0.0f)
+            ),
             alpha = Alpha.Target(if (stackIndex == 1) 1f else 0f),
             zIndex = ZIndex.Target(-stackIndex.toFloat()),
         )
@@ -72,7 +72,15 @@ class BackStack3D<InteractionTarget : Any>(
     override fun State<InteractionTarget>.toUiTargets(): List<MatchedTargetUiState<InteractionTarget, TargetUiState>> =
         created.mapIndexed { _, element -> MatchedTargetUiState(element, incoming) } +
                 listOf(active).map { MatchedTargetUiState(it, if (stashed.isEmpty()) single else topMost) } +
-                stashed.mapIndexed { index, element -> MatchedTargetUiState(element, stacked(stashed.size, stashed.size - index)) } +
+                stashed.mapIndexed { index, element ->
+                    MatchedTargetUiState(
+                        element = element,
+                        targetUiState = stacked(
+                            isSingleItemStack = stashed.size == 1,
+                            stackIndex = stashed.size - index
+                        )
+                    )
+                } +
                 destroyed.mapIndexed { _, element -> MatchedTargetUiState(element, incoming) }
 
     override fun mutableUiStateFor(uiContext: UiContext, targetUiState: TargetUiState): MutableUiState =
