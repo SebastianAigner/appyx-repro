@@ -22,6 +22,7 @@ import com.bumble.appyx.transitionmodel.BaseMotionController
 
 class BackStack3D<InteractionTarget : Any>(
     uiContext: UiContext,
+    private val itemsInStack: Int = 3,
 ) : BaseMotionController<InteractionTarget, State<InteractionTarget>, MutableUiState, TargetUiState>(
     uiContext = uiContext,
 ) {
@@ -35,7 +36,7 @@ class BackStack3D<InteractionTarget : Any>(
                 origin = TransformOrigin(0.5f, 0.0f)
             ),
             alpha = Alpha.Target(1f),
-            zIndex = ZIndex.Target(1f),
+            zIndex = ZIndex.Target(itemsInStack.toFloat()),
         )
 
     private val single: TargetUiState =
@@ -54,7 +55,7 @@ class BackStack3D<InteractionTarget : Any>(
                 origin = TransformOrigin(0.5f, 0.0f)
             ),
             alpha = Alpha.Target(1f),
-            zIndex = ZIndex.Target(2f),
+            zIndex = ZIndex.Target(itemsInStack + 1f),
         )
 
     private fun stacked(isSingleItemStack: Boolean, stackIndex: Int): TargetUiState =
