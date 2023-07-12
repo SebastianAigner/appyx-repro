@@ -4,6 +4,8 @@ import android.os.Parcelable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -96,6 +99,12 @@ class BackStackNode(
                         .background(backgroundColor)
                         .padding(24.dp)
                         .gestureModifier(backStack, interactionTarget.index.toString())
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                        ) {
+                            backStack.push(InteractionTarget.Child(Random.nextInt(20)))
+                        }
                 ) {
                     Text(
                         text = interactionTarget.index.toString(),
@@ -125,29 +134,29 @@ class BackStackNode(
                         when (childSize) {
                             ChildSize.DEFAULT -> Modifier.padding(16.dp)
                             ChildSize.MAX -> Modifier.padding(bottom = 16.dp)
-                            ChildSize.MAX_WIDTH -> Modifier.padding(top = 8.dp, bottom = 16.dp)
+                            ChildSize.MAX_WIDTH -> Modifier
                         }
                     ),
             )
-            Row(
-                modifier = Modifier
-                    .weight(0.1f)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                TextButton(text = "Push") {
-                    backStack.push(InteractionTarget.Child(Random.nextInt(20)))
-                }
-                TextButton(text = "Pop") {
-                    backStack.pop()
-                }
-                TextButton(text = "Replace") {
-                    backStack.replace(InteractionTarget.Child(Random.nextInt(20)))
-                }
-                TextButton(text = "New root") {
-                    backStack.newRoot(InteractionTarget.Child(Random.nextInt(20)))
-                }
-            }
+//            Row(
+//                modifier = Modifier
+//                    .weight(0.1f)
+//                    .fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceEvenly
+//            ) {
+//                TextButton(text = "Push") {
+//                    backStack.push(InteractionTarget.Child(Random.nextInt(20)))
+//                }
+//                TextButton(text = "Pop") {
+//                    backStack.pop()
+//                }
+//                TextButton(text = "Replace") {
+//                    backStack.replace(InteractionTarget.Child(Random.nextInt(20)))
+//                }
+//                TextButton(text = "New root") {
+//                    backStack.newRoot(InteractionTarget.Child(Random.nextInt(20)))
+//                }
+//            }
         }
     }
 }

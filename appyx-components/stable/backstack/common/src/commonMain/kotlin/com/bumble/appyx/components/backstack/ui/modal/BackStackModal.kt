@@ -1,11 +1,11 @@
-package com.bumble.appyx.components.backstack.ui.stack3d
+package com.bumble.appyx.components.backstack.ui.modal
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import com.bumble.appyx.components.backstack.BackStackModel.State
 import com.bumble.appyx.components.backstack.operation.Pop
 import com.bumble.appyx.interactions.core.ui.context.TransitionBounds
@@ -14,16 +14,14 @@ import com.bumble.appyx.interactions.core.ui.gesture.Drag
 import com.bumble.appyx.interactions.core.ui.gesture.Gesture
 import com.bumble.appyx.interactions.core.ui.gesture.GestureFactory
 import com.bumble.appyx.interactions.core.ui.gesture.dragVerticalDirection
-import com.bumble.appyx.interactions.core.ui.property.impl.Alpha
+import com.bumble.appyx.interactions.core.ui.property.impl.ColorOverlay
 import com.bumble.appyx.interactions.core.ui.property.impl.Position
 import com.bumble.appyx.interactions.core.ui.property.impl.Scale
-import com.bumble.appyx.interactions.core.ui.property.impl.ZIndex
 import com.bumble.appyx.interactions.core.ui.state.MatchedTargetUiState
 import com.bumble.appyx.transitionmodel.BaseMotionController
 
-class BackStack3D<InteractionTarget : Any>(
+class BackStackModal<InteractionTarget : Any>(
     uiContext: UiContext,
-    private val itemsInStack: Int = 3,
 ) : BaseMotionController<InteractionTarget, State<InteractionTarget>, MutableUiState, TargetUiState>(
     uiContext = uiContext,
 ) {
@@ -31,33 +29,46 @@ class BackStack3D<InteractionTarget : Any>(
 
     private val topMost: TargetUiState =
         TargetUiState(
-            position = Position.Target(DpOffset(0f.dp, (itemsInStack * 16).dp)),
-            scale = Scale.Target(1f, origin = TransformOrigin(0.5f, 0.0f)),
-            alpha = Alpha.Target(1f),
-            zIndex = ZIndex.Target(itemsInStack.toFloat()),
+            position = Position.Target(DpOffset(0f.dp, 16.dp), easing = LinearOutSlowInEasing),
+            scale = Scale.Target(
+                value = 1f,
+                origin = TransformOrigin(0.5f, 0.0f)
+            ),
+        )
+
+    private val single: TargetUiState =
+        TargetUiState(
+            position = Position.Target(DpOffset(0.dp, 0.dp)),
+            scale = Scale.Target(1f),
         )
 
     private val incoming: TargetUiState =
         TargetUiState(
             position = Position.Target(DpOffset(0f.dp, height)),
-            scale = Scale.Target(1f, origin = TransformOrigin(0.5f, 0.0f)),
-            alpha = Alpha.Target(0f),
-            zIndex = ZIndex.Target(itemsInStack + 1f),
+            scale = Scale.Target(
+                value = 1f,
+                origin = TransformOrigin(0.5f, 0.0f)
+            ),
         )
 
-    private fun stacked(stackIndex: Int): TargetUiState =
+    private fun stacked(isSingleItemStack: Boolean): TargetUiState =
         TargetUiState(
-            position = Position.Target(DpOffset(0f.dp, (itemsInStack - stackIndex) * 16.dp)),
-            scale = Scale.Target(1f - stackIndex * 0.05f, origin = TransformOrigin(0.5f, 0.0f)),
-            alpha = Alpha.Target(if (stackIndex < itemsInStack) 1f else 0f),
-            zIndex = ZIndex.Target(-stackIndex.toFloat()),
+            position = Position.Target(DpOffset(0.dp, if (isSingleItemStack) (-20).dp else 4.dp)),
+            scale = Scale.Target(
+                value = if (isSingleItemStack) 0.93f else 0.90f,
+                origin = TransformOrigin(0.5f, if (isSingleItemStack) 0.2f else 0.0f)
+            ),
+            colorOverlay = ColorOverlay.Target(0.3f),
         )
 
     override fun State<InteractionTarget>.toUiTargets(): List<MatchedTargetUiState<InteractionTarget, TargetUiState>> =
-        created.mapIndexed { _, element -> MatchedTargetUiState(element, incoming) } +
-                listOf(active).map { MatchedTargetUiState(it, topMost) } +
-                stashed.mapIndexed { index, element -> MatchedTargetUiState(element, stacked(stashed.size - index)) } +
-                destroyed.mapIndexed { _, element -> MatchedTargetUiState(element, incoming) }
+        stashed.map { element ->
+            MatchedTargetUiState(
+                element = element,
+                targetUiState = stacked(isSingleItemStack = stashed.size == 1)
+            )
+        } + listOf(active).map { MatchedTargetUiState(it, if (stashed.isEmpty()) single else topMost) } +
+                (created + destroyed).mapIndexed { _, element -> MatchedTargetUiState(element, incoming) }
 
     override fun mutableUiStateFor(uiContext: UiContext, targetUiState: TargetUiState): MutableUiState =
         targetUiState.toMutableState(uiContext)
