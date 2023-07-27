@@ -1,5 +1,6 @@
 package com.bumble.appyx.interactions
 
+import MainView
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -44,40 +45,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AppyxTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = appyx_dark
-                ) {
-                    var content by remember { mutableStateOf(1) }
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Button({ content = 1 }) { Text("1") }
-                            Button({ content = 2 }) { Text("2") }
-                            Button({ content = 3 }) { Text("3") }
-                            Button({ content = 4 }) { Text("4") }
-                            Button({ content = 5 }) { Text("5") }
-                            Button({ content = 6 }) { Text("6") }
-                            Button({ content = 7 }) { Text("7") }
-                        }
-                        when (content) {
-                            1 -> DatingCards()
-                            2 -> SpotlightExperimentInVertical { SpotlightStack3D(it) }
-                            3 -> SpotlightExperiment { SpotlightSliderScale(it) }
-                            4 -> SpotlightExperiment { SpotlightSliderRotation(it) }
-                            5 -> SpotlightExperiment { SpotlightFader(it) }
-                            6 -> TestDriveExperiment()
-                            7 -> Puzzle15()
-                            else -> SpotlightExperiment { SpotlightSlider(it) }
-                        }
-                    }
-                }
-            }
+            MainView()
         }
     }
 }

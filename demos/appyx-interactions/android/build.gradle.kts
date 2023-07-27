@@ -38,6 +38,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":demos:appyx-interactions:shared"))
     val composeBom = platform(libs.compose.bom)
 
     implementation(composeBom)
