@@ -5,6 +5,7 @@ buildscript {
         google()
         mavenCentral()
         maven(url = "https://jitpack.io")
+        mavenCentral()
     }
     dependencies {
         classpath(libs.plugin.android)
